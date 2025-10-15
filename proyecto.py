@@ -37,7 +37,11 @@ def hill_cifrado(texto, matriz_clave):
         texto+='X'
     
     resultado = ""
-
+def hill_descifrado(texto, matriz_clave):
+    """
+    DESCIFRA USANDO MATRIZ DE 2X2 EN MOD 27
+    P = K^(-1) × C (mod 27)
+    """
 
 def menu_hill():
     print("\n"+"="*80)
