@@ -4,6 +4,30 @@ import math
 
 ALFABETO = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"
 N = len(ALFABETO)
+###############################################
+#              FUNCIONES AUXILIARES           #
+###############################################
+def mod_inverse(a,m):
+    """HALLA EL INVERSO MULTIPLICATIVO DE a EN MOD m"""
+    if math.gcd(a,m)!=1:
+        raise ValueError(f"[!] ERROR! NO EXISTE EL INVERSO MODULAR DE {a} EN mod {m}")
+    m0,x0,x1=m,0,1
+    while a>1:
+        q=a//m
+        m,a=a%m,m
+        x0,x1=x1-q*x0,x0
+    return x1%m0
+
+def num_to_char(num):
+    """CONVIERTE UN NUMERO A SU EQUIVALENTE CARACTER"""
+    return ALFABETO[num%N]
+
+def char_to_num(char):
+    """CONVIERTE UN CARACTER A SU EQUIVALENTE NUMERICO"""
+    char=char.upper()
+    for char in ALFABETO:
+        return ALFABETO.index(char)
+    return -1
 
 def limpiar_texto(texto):
     """LIMPIA EL TEXTO DE CARACTERES NO VALIDOS"""
@@ -25,7 +49,6 @@ def hill_cifrado(texto, matriz_clave):
     #VALIDAR LA MATRIZ
     if len(matriz_clave) != 4:
         raise ValueError("[!] ERROR! LA MATRIZ DEBE CONTENER 4 EELEMTOS: [a,b,c,d]")
-    
     a,b,c,d=matriz_clave
 
     #HALLAR LA EDTERMINNTE PARA VER SI ES INVERTIBLE LA MARTRIZ
@@ -38,6 +61,21 @@ def hill_cifrado(texto, matriz_clave):
     
     resultado = ""
 
+    #PROCESAR DE 2 EN 2
+    for i in range(0,len(texto),2):
+        p1=char_to_num(texto[i])
+        p2=char_to_num(texto[i+1])
+
+        #MULTIPLICAR LA MATRIZ POR EL VECTOR
+        c1=(a*p1+b*p2)%N
+        c2=(c*p1+d*p2)%N
+        resultado+=num_to_char(c1)+num_to_char(c2)
+
+def hill_descifrado(texto, matriz_clave):
+    """
+    DESCIFRA USANDO MATRIZ DE 2X2 EN MOD 27
+    P = K^(-1) × C (mod 27)
+    """
 
 def menu_hill():
     print("\n"+"="*80)
