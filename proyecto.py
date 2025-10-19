@@ -5,7 +5,7 @@ import math
 ALFABETO = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"
 N = len(ALFABETO)
 ###############################################
-#              FUNCIONES AUXILIARES           #
+#             FUNCIONES AUXILIARES            #
 ###############################################
 def mod_inverse(a,m):
     """HALLA EL INVERSO MULTIPLICATIVO DE a EN MOD m"""
@@ -33,6 +33,43 @@ def limpiar_texto(texto):
     """LIMPIA EL TEXTO DE CARACTERES NO VALIDOS"""
     return ''.join([c.upper() for c in texto if c.upper() in ALFABETO])
 
+def cifrado_cesar(texto, desplazamiento):
+    resultado = ""
+    
+    for char in texto.upper(): 
+        if char in ALFABETO:
+
+            indice = ALFABETO.index(char)
+
+            nuevo_indice = (indice + desplazamiento)  
+            nuevo_indice1 = nuevo_indice % len(ALFABETO)
+
+            if nuevo_indice >= len(ALFABETO):
+                print(f"La letra '{char}' de la posición {indice} se pasa del alfabeto (mayor que 27).")
+                print(f"Por lo tanto, aplicamos el módulo: {nuevo_indice} % 27 = {nuevo_indice1}\n")
+
+            resultado += ALFABETO[nuevo_indice1]
+        else:
+            resultado += char
+
+    return resultado
+
+
+def descifrar_cesar(texto, desplazamiento):
+    return cifrado_cesar(texto, -desplazamiento)
+
+
+print("=== Cifrado César  ===")     
+
+texto = input("Ingrese el texto a cifrar: ").upper()
+clave = int(input("Ingrese el desplazamiento: "))
+
+cifrado = cifrado_cesar(texto, clave)
+descifrado = descifrar_cesar(cifrado, clave)
+
+print("\n  Texto original:  ", texto)
+print(" Texto cifrado:   ", cifrado)
+print(" Texto descifrado:", descifrado)
 
 def hill_cifrado(texto, matriz_clave):
     """
@@ -52,7 +89,7 @@ def hill_cifrado(texto, matriz_clave):
     a,b,c,d=matriz_clave
 
     #HALLAR LA EDTERMINNTE PARA VER SI ES INVERTIBLE LA MARTRIZ
-    det = ((a*b)-(d*c))%N
+    det = ((a*b)-(d*c))%N # RETORNA EL ENTERO SEGUN LA CANT DE LETRAS EN EL ALFABETO
     if math.gcd(det, N) != 1:
         raise ValueError(f"[!] ERROR! LA MATRIZ NO ES INVERTIBLE EN mod{N}. det={det}, mcd(det,{N})={math.gcd(det,N)}")
 
@@ -76,7 +113,9 @@ def hill_descifrado(texto, matriz_clave):
     DESCIFRA USANDO MATRIZ DE 2X2 EN MOD 27
     P = K^(-1) × C (mod 27)
     """
-
+def menu_cesar():
+    print("\n"+"="*80)
+    
 def menu_hill():
     print("\n"+"="*80)
 
@@ -90,8 +129,8 @@ def menu_principal():
     
     match opcion:
         case "1":
-            #COCK AQUI AÑADES EL METODO CESAR QUE VAS A HACER
             print("[!] CIFRADO CON EL METODO CESAR")
+            menu_cesar()
         case "2":
             print("[!] CIFRADO CON EL METODO HILL")
             menu_hill()
@@ -104,4 +143,4 @@ def menu_principal():
     input("\n[*] PRESIONES ENTER PARA CONTINUAR...")
 
 if __name__ == "__main__":
-    menu_principal()
+    menu_principal() 
