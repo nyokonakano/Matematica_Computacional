@@ -33,6 +33,10 @@ def limpiar_texto(texto):
     """LIMPIA EL TEXTO DE CARACTERES NO VALIDOS"""
     return ''.join([c.upper() for c in texto if c.upper() in ALFABETO])
 
+###############################################
+#            FUNCIONES PRINCIPALES            #
+###############################################
+
 def cifrado_cesar(texto, desplazamiento):
     resultado = ""
     
