@@ -11,7 +11,7 @@ N = len(ALFABETO)
 def mod_inverse(a, m):
     """HALLA EL INVERSO MULTIPLICATIVO DE a EN MOD m"""
     if math.gcd(a, m) != 1:
-        raise ValueError(f"[!] ERROR! NO EXISTE EL INVERSO MODULAR DE {a} EN MOD {m}")
+        return None
     m0, x0, x1 = m, 0, 1
     while a > 1:
         q = a // m
@@ -20,18 +20,18 @@ def mod_inverse(a, m):
     return x1 % m0
 
 def num_to_char(num):
-    """CONVIERTE UN NUMERO A SU EQUIVALENTE CARACTER"""
+    """CONVIERTE UN NÚMERO A SU EQUIVALENTE CARACTER"""
     return ALFABETO[num % N]
 
 def char_to_num(char):
-    """CONVIERTE UN CARACTER A SU EQUIVALENTE NUMERICO"""
+    """CONVIERTE UN CARACTER A SU EQUIVALENTE NUMÉRICO"""
     char = char.upper()
     if char in ALFABETO:
         return ALFABETO.index(char)
     return -1
 
 def limpiar_texto(texto):
-    """LIMPIA EL TEXTO DE CARACTERES NO VALIDOS"""
+    """LIMPIA EL TEXTO DE CARACTERES NO VÁLIDOS"""
     return ''.join([c.upper() for c in texto if c.upper() in ALFABETO])
 
 ###############################################
@@ -57,12 +57,15 @@ def hill_cifrado(texto, matriz_clave):
     """CIFRA USANDO MATRIZ DE 2x2 EN MOD 27"""
     texto = limpiar_texto(texto)
     if len(matriz_clave) != 4:
-        raise ValueError("[!] ERROR! LA MATRIZ DEBE CONTENER 4 ELEMENTOS [A,B,C,D]")
-    a, b, c, d = matriz_clave
+        print("[!] ERROR: LA MATRIZ DEBE TENER 4 ELEMENTOS [A,B,C,D]")
+        return None
 
+    a, b, c, d = matriz_clave
     det = (a * d - b * c) % N
+
     if math.gcd(det, N) != 1:
-        raise ValueError(f"[!] ERROR! LA MATRIZ NO ES INVERTIBLE EN MOD {N}")
+        print(f"[!] ALERTA: LA MATRIZ NO ES INVERTIBLE EN MOD {N}. INTENTE CON OTRA CLAVE.")
+        return None
 
     if len(texto) % 2 != 0:
         texto += 'X'
@@ -80,14 +83,20 @@ def hill_descifrado(texto, matriz_clave):
     """DESCIFRA USANDO MATRIZ DE 2x2 EN MOD 27"""
     texto = limpiar_texto(texto)
     if len(matriz_clave) != 4:
-        raise ValueError("[!] LA MATRIZ DEBE TENER 4 ELEMENTOS [A,B,C,D]")
-    a, b, c, d = matriz_clave
+        print("[!] ERROR: LA MATRIZ DEBE TENER 4 ELEMENTOS [A,B,C,D]")
+        return None
 
+    a, b, c, d = matriz_clave
     det = (a * d - b * c) % N
     if math.gcd(det, N) != 1:
-        raise ValueError(f"[!] LA MATRIZ NO ES INVERTIBLE EN MOD {N}")
+        print(f"[!] ALERTA: LA MATRIZ NO ES INVERTIBLE EN MOD {N}. NO SE PUEDE DESCIFRAR.")
+        return None
 
     det_inv = mod_inverse(det, N)
+    if det_inv is None:
+        print("[!] ERROR: NO EXISTE INVERSO MODULAR.")
+        return None
+
     a_inv = (det_inv * d) % N
     b_inv = (det_inv * (-b)) % N
     c_inv = (det_inv * (-c)) % N
@@ -135,10 +144,12 @@ def menu_hill():
 
     if opcion == "1":
         resultado = hill_cifrado(texto, matriz)
-        print(f"\n[+] TEXTO CIFRADO: {resultado}")
+        if resultado:
+            print(f"\n[+] TEXTO CIFRADO: {resultado}")
     elif opcion == "2":
         resultado = hill_descifrado(texto, matriz)
-        print(f"\n[+] TEXTO DESCIFRADO: {resultado}")
+        if resultado:
+            print(f"\n[+] TEXTO DESCIFRADO: {resultado}")
     else:
         print("[!] OPCIÓN NO VÁLIDA.")
 
