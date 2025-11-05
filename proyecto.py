@@ -1,9 +1,32 @@
 #import tkinter as tk
 #from tkinter import ttk, messagebox, scrolledtext
 import math
+import random
+import sys
 
 ALFABETO = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"
 N = len(ALFABETO)
+###############################################
+#                    LOGO                     #
+###############################################
+
+def mostrar_logo():
+    """MUESTRA EL LOGO ASCII DEL SISTEMA"""
+    logo = """
+    ╔════════════════════════════════════════════════════════════╗
+    ║                                                            ║
+    ║     ██████╗██╗   ██╗██████╗ ██╗  ██╗███████╗██████╗        ║
+    ║    ██╔════╝╚██╗ ██╔╝██╔══██╗██║  ██║██╔════╝██╔══██╗       ║
+    ║    ██║      ╚████╔╝ ██████╔╝███████║█████╗  ██████╔╝       ║
+    ║    ██║       ╚██╔╝  ██╔═══╝ ██╔══██║██╔══╝  ██╔══██╗       ║
+    ║    ╚██████╗   ██║   ██║     ██║  ██║███████╗██║  ██║       ║
+    ║     ╚═════╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝       ║
+    ║                                                            ║
+    ║                SISTEMA DE CRIPTOGRAFÍA v1.0                ║
+    ║                                                            ║
+    ╚════════════════════════════════════════════════════════════╝
+    """
+    print(logo)
 
 ###############################################
 #             FUNCIONES AUXILIARES            #
@@ -35,7 +58,7 @@ def limpiar_texto(texto):
     return ''.join([c.upper() for c in texto if c.upper() in ALFABETO])
 
 ###############################################
-#             FUNCIONES PRINCIPALES           #
+#             FUNCIONES CÉSAR                 #
 ###############################################
 def cifrado_cesar(texto, desplazamiento):
     """CIFRA USANDO EL MÉTODO CÉSAR"""
@@ -53,6 +76,9 @@ def descifrar_cesar(texto, desplazamiento):
     """DESCIFRA USANDO EL MÉTODO CÉSAR"""
     return cifrado_cesar(texto, -desplazamiento)
 
+###############################################
+#             FUNCIONES HILL                  #
+###############################################
 def hill_cifrado(texto, matriz_clave):
     """CIFRA USANDO MATRIZ DE 2x2 EN MOD 27"""
     texto = limpiar_texto(texto)
@@ -112,6 +138,87 @@ def hill_descifrado(texto, matriz_clave):
     return resultado
 
 ###############################################
+#             FUNCIONES RSA                   #
+###############################################
+def es_primo(n, k=5):
+    """TEST DE PRIMALIDAD DE MILLER-RABIN"""
+    if n < 2:
+        return False
+    if n == 2 or n == 3:
+        return True
+    if n % 2 == 0:
+        return False
+    
+    r, d = 0, n - 1
+    while d % 2 == 0:
+        r += 1
+        d //= 2
+    
+    for _ in range(k):
+        a = random.randrange(2, n - 1)
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(r - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
+def generar_primo(bits=16):
+    """GENERA UN NÚMERO PRIMO DE bits BITS"""
+    while True:
+        num = random.randrange(2**(bits-1), 2**bits)
+        if es_primo(num):
+            return num
+
+def generar_claves_rsa(bits=16):
+    """GENERA PAR DE CLAVES RSA (PÚBLICA Y PRIVADA)"""
+    print("[*] GENERANDO NÚMEROS PRIMOS...")
+    p = generar_primo(bits)
+    q = generar_primo(bits)
+    
+    n = p * q
+    phi = (p - 1) * (q - 1)
+    
+    e = 65537
+    while math.gcd(e, phi) != 1:
+        e = random.randrange(3, phi, 2)
+    
+    d = mod_inverse(e, phi)
+    
+    print(f"[+] CLAVE PÚBLICA (e, n): ({e}, {n})")
+    print(f"[+] CLAVE PRIVADA (d, n): ({d}, {n})")
+    
+    return (e, n), (d, n)
+
+def cifrar_rsa(texto, clave_publica):
+    """CIFRA TEXTO USANDO RSA"""
+    e, n = clave_publica
+    texto = limpiar_texto(texto)
+    
+    cifrado = []
+    for char in texto:
+        m = char_to_num(char)
+        c = pow(m, e, n)
+        cifrado.append(c)
+    
+    return cifrado
+
+def descifrar_rsa(cifrado, clave_privada):
+    """DESCIFRA TEXTO USANDO RSA"""
+    d, n = clave_privada
+    
+    descifrado = ""
+    for c in cifrado:
+        m = pow(c, d, n)
+        descifrado += num_to_char(m)
+    
+    return descifrado
+
+###############################################
 #                    MENÚS                    #
 ###############################################
 def menu_cesar():
@@ -153,13 +260,57 @@ def menu_hill():
     else:
         print("[!] OPCIÓN NO VÁLIDA.")
 
+def menu_rsa():
+    print("\n========== CIFRADO RSA ==========")
+    print("1. GENERAR NUEVAS CLAVES Y CIFRAR")
+    print("2. USAR CLAVES EXISTENTES PARA CIFRAR")
+    print("3. DESCIFRAR CON CLAVE PRIVADA")
+    opcion = input("SELECCIONE UNA OPCIÓN: ").strip()
+
+    if opcion == "1":
+        bits = int(input("INGRESE TAMAÑO DE BITS PARA PRIMOS (16-32 RECOMENDADO): ") or "16")
+        clave_publica, clave_privada = generar_claves_rsa(bits)
+        
+        texto = input("\nINGRESE EL TEXTO A CIFRAR: ").upper()
+        cifrado = cifrar_rsa(texto, clave_publica)
+        print(f"\n[+] TEXTO CIFRADO: {cifrado}")
+        
+        respuesta = input("\n¿DESEA DESCIFRAR AHORA? (S/N): ").strip().upper()
+        if respuesta == "S":
+            descifrado = descifrar_rsa(cifrado, clave_privada)
+            print(f"[+] TEXTO DESCIFRADO: {descifrado}")
+    
+    elif opcion == "2":
+        e = int(input("INGRESE e (EXPONENTE PÚBLICO): "))
+        n = int(input("INGRESE n (MÓDULO): "))
+        clave_publica = (e, n)
+        
+        texto = input("INGRESE EL TEXTO A CIFRAR: ").upper()
+        cifrado = cifrar_rsa(texto, clave_publica)
+        print(f"\n[+] TEXTO CIFRADO: {cifrado}")
+    
+    elif opcion == "3":
+        d = int(input("INGRESE d (EXPONENTE PRIVADO): "))
+        n = int(input("INGRESE n (MÓDULO): "))
+        clave_privada = (d, n)
+        
+        cifrado_str = input("INGRESE EL TEXTO CIFRADO (LISTA DE NÚMEROS SEPARADOS POR COMAS): ")
+        cifrado = [int(x.strip()) for x in cifrado_str.strip('[]').split(',')]
+        
+        descifrado = descifrar_rsa(cifrado, clave_privada)
+        print(f"\n[+] TEXTO DESCIFRADO: {descifrado}")
+    else:
+        print("[!] OPCIÓN NO VÁLIDA.")
+
 def menu_principal():
+    mostrar_logo()
     while True:
         print("\n" + "="*45)
         print("      SISTEMA DE CRIPTOGRAFÍA EN PYTHON")
         print("="*45)
         print("1. CIFRADO CÉSAR")
         print("2. CIFRADO HILL")
+        print("3. CIFRADO RSA")
         print("0. SALIR")
 
         opcion = input("SELECCIONE UNA OPCIÓN: ").strip().upper()
@@ -167,9 +318,12 @@ def menu_principal():
             menu_cesar()
         elif opcion == "2":
             menu_hill()
+        elif opcion == "3":
+            menu_rsa()
         elif opcion == "0":
             print("[!] SALIENDO DEL PROGRAMA...")
-            break
+            sys.exit(0) # ESTADO DE SALIDA EXITOSA
+            # sys.exit(1) # ESTADO DE SALIDA CON ERROR
         else:
             print("[!] OPCIÓN NO VÁLIDA.")
 
