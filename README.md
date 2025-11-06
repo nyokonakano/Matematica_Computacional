@@ -286,7 +286,7 @@ ALFABETO = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"  # 27 caracteres
 
 ## Autor
 
-Desarrollado para el Grupo 6 de **Matemática Computacional**
+Desarrollado por el Grupo 6 para el curso de **Matemática Computacional**
 
 
 
