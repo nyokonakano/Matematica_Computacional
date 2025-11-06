@@ -9,7 +9,6 @@
 
 **Sistema completo de criptografía con tres algoritmos clásicos: César, Hill y RSA**
 
-[Características](#-características) • [Instalación](#-instalación) • [Uso](#-uso) • [Compilar](#-compilar-a-exe)
 
 </div>
 
